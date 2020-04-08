@@ -33,9 +33,6 @@ public class AllowMemberUseTemplate {
    */
   public static void grantTagTemplateUserRole(
       String projectId, String templateId, String memberId) {
-    // String projectId = "my-project"
-    // String templateId = "my_template"
-    // String memberId = "user:test-user@gmail.com"
 
     // Currently, Data Catalog stores metadata in the us-central1 region.
     String location = "us-central1";

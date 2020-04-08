@@ -19,9 +19,10 @@ package com.example.datacatalog;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-import com.google.cloud.datacatalog.v1.DataCatalogClient;
-import com.google.cloud.datacatalog.v1.EntryGroupName;
-import com.google.cloud.datacatalog.v1.EntryName;
+import com.google.cloud.datacatalog.v1.TagTemplateName;
+import com.google.cloud.datacatalog.v1beta1.DataCatalogClient;
+import com.google.cloud.datacatalog.v1beta1.EntryGroupName;
+import com.google.cloud.datacatalog.v1beta1.EntryName;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -35,9 +36,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
-/** Integration (system) tests for {@link CreateFilesetEntry}. */
+/**
+ * Integration (system) tests for {@link CreateFilesetEntry}.
+ */
 @RunWith(JUnit4.class)
-public class CreateFilesetEntryTests {
+public class CreateCustomTypeTests {
 
   private ByteArrayOutputStream bout;
 
@@ -46,6 +49,8 @@ public class CreateFilesetEntryTests {
 
   private static List<String> entryGroupsPendingDeletion = new ArrayList<>();
   private static List<String> entriesPendingDeletion = new ArrayList<>();
+  private static List<String> tagTemplatesPendingDeletion = new ArrayList<>();
+
 
   @Before
   public void setUp() {
@@ -63,7 +68,8 @@ public class CreateFilesetEntryTests {
   public static void tearDownClass() {
     try (DataCatalogClient dataCatalogClient = DataCatalogClient.create()) {
       // Must delete Entries before deleting the Entry Group.
-      if (entriesPendingDeletion.isEmpty() || entryGroupsPendingDeletion.isEmpty()) {
+      if (entriesPendingDeletion.isEmpty() || entryGroupsPendingDeletion.isEmpty() ||
+          tagTemplatesPendingDeletion.isEmpty()) {
         fail("Something went wrong, no entries were generated");
       }
 
@@ -74,6 +80,10 @@ public class CreateFilesetEntryTests {
       for (String entryGroupName : entryGroupsPendingDeletion) {
         dataCatalogClient.deleteEntryGroup(entryGroupName);
       }
+
+      for (String tagTemplateName : tagTemplatesPendingDeletion) {
+        dataCatalogClient.deleteTagTemplate(tagTemplateName, true);
+      }
     } catch (Exception e) {
       System.out.println("Error in cleaning up test data:\n" + e.toString());
     }
@@ -81,10 +91,11 @@ public class CreateFilesetEntryTests {
 
   @Test
   public void testCreateEntryQuickStart() {
-    String entryGroupId = "fileset_entry_group_parent_" + getUuid8Chars();
-    String entryId = "fileset_entry_id_" + getUuid8Chars();
+    String entryGroupId = "custom_type_entry_group_parent_" + getUuid8Chars();
+    String entryId = "custom_type_entry_id_" + getUuid8Chars();
+    String tagTemplateId = "custom_type_tag_template_id_" + getUuid8Chars();
 
-    CreateFilesetEntry.createEntry(PROJECT_ID, entryGroupId, entryId);
+    CreateCustomType.createCustomType(PROJECT_ID, entryGroupId, entryId, tagTemplateId);
 
     // Store names for clean up on teardown
     String expectedEntryGroupName =
@@ -94,15 +105,24 @@ public class CreateFilesetEntryTests {
     String expectedEntryName = EntryName.of(PROJECT_ID, LOCATION, entryGroupId, entryId).toString();
     entriesPendingDeletion.add(expectedEntryName);
 
+    String expectedTagTemplateName = TagTemplateName.of(PROJECT_ID, LOCATION, tagTemplateId)
+        .toString();
+    tagTemplatesPendingDeletion.add(expectedTagTemplateName);
+
     String output = bout.toString();
 
     String entryTemplate = "Entry created with name: %s";
     String entryGroupTemplate = "Entry Group created with name: %s";
+    String tagTemplateTemplate = "Template created with name: %s";
+
     assertThat(
         output,
         CoreMatchers.containsString(String.format(entryGroupTemplate, expectedEntryGroupName)));
     assertThat(
         output, CoreMatchers.containsString(String.format(entryTemplate, expectedEntryName)));
+    assertThat(
+        output,
+        CoreMatchers.containsString(String.format(tagTemplateTemplate, expectedTagTemplateName)));
   }
 
   private String getUuid8Chars() {

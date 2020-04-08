@@ -21,13 +21,10 @@ import static org.junit.Assert.fail;
 
 import com.google.cloud.datacatalog.v1.TagTemplateName;
 import com.google.cloud.datacatalog.v1beta1.DataCatalogClient;
-import com.google.cloud.datacatalog.v1beta1.EntryGroupName;
-import com.google.cloud.datacatalog.v1beta1.EntryName;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -37,18 +34,16 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /**
- * Integration (system) tests for {@link CreateCustomType}.
+ * Integration (system) tests for {@link CreateTags}.
  */
 @RunWith(JUnit4.class)
-public class CreateCustomTypeTests {
+public class CreateTagsTests {
 
   private ByteArrayOutputStream bout;
 
   private static String LOCATION = "us-central1";
   private static String PROJECT_ID = System.getenv().get("GOOGLE_CLOUD_PROJECT");
 
-  private static List<String> entryGroupsPendingDeletion = new ArrayList<>();
-  private static List<String> entriesPendingDeletion = new ArrayList<>();
   private static List<String> tagTemplatesPendingDeletion = new ArrayList<>();
 
 
@@ -68,17 +63,8 @@ public class CreateCustomTypeTests {
   public static void tearDownClass() {
     try (DataCatalogClient dataCatalogClient = DataCatalogClient.create()) {
       // Must delete Entries before deleting the Entry Group.
-      if (entriesPendingDeletion.isEmpty() || entryGroupsPendingDeletion.isEmpty() ||
-          tagTemplatesPendingDeletion.isEmpty()) {
+      if (tagTemplatesPendingDeletion.isEmpty()) {
         fail("Something went wrong, no entries were generated");
-      }
-
-      for (String entryName : entriesPendingDeletion) {
-        dataCatalogClient.deleteEntry(entryName);
-      }
-
-      for (String entryGroupName : entryGroupsPendingDeletion) {
-        dataCatalogClient.deleteEntryGroup(entryGroupName);
       }
 
       for (String tagTemplateName : tagTemplatesPendingDeletion) {
@@ -91,19 +77,9 @@ public class CreateCustomTypeTests {
 
   @Test
   public void testCreateEntryQuickStart() {
-    String entryGroupId = "custom_type_entry_group_parent_" + getUuid8Chars();
-    String entryId = "custom_type_entry_id_" + getUuid8Chars();
-    String tagTemplateId = "custom_type_tag_template_id_" + getUuid8Chars();
+    String tagTemplateId = "demo_tag_template";
 
-    CreateCustomType.createCustomType(PROJECT_ID, entryGroupId, entryId, tagTemplateId);
-
-    // Store names for clean up on teardown
-    String expectedEntryGroupName =
-        EntryGroupName.of(PROJECT_ID, LOCATION, entryGroupId).toString();
-    entryGroupsPendingDeletion.add(expectedEntryGroupName);
-
-    String expectedEntryName = EntryName.of(PROJECT_ID, LOCATION, entryGroupId, entryId).toString();
-    entriesPendingDeletion.add(expectedEntryName);
+    CreateTags.createTags(PROJECT_ID, tagTemplateId);
 
     String expectedTagTemplateName = TagTemplateName.of(PROJECT_ID, LOCATION, tagTemplateId)
         .toString();
@@ -111,21 +87,10 @@ public class CreateCustomTypeTests {
 
     String output = bout.toString();
 
-    String entryTemplate = "Entry created with name: %s";
-    String entryGroupTemplate = "Entry Group created with name: %s";
     String tagTemplateTemplate = "Template created with name: %s";
 
     assertThat(
         output,
-        CoreMatchers.containsString(String.format(entryGroupTemplate, expectedEntryGroupName)));
-    assertThat(
-        output, CoreMatchers.containsString(String.format(entryTemplate, expectedEntryName)));
-    assertThat(
-        output,
         CoreMatchers.containsString(String.format(tagTemplateTemplate, expectedTagTemplateName)));
-  }
-
-  private String getUuid8Chars() {
-    return UUID.randomUUID().toString().substring(0, 8);
   }
 }

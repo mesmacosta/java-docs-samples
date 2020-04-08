@@ -29,7 +29,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 
 /**
- * Integration (system) tests for {@link CreateFilesetEntry}.
+ * Integration (system) tests for {@link SearchCatalog}.
  */
 @RunWith(JUnit4.class)
 public class SearchCatalogTests {

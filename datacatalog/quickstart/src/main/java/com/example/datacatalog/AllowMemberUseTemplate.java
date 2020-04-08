@@ -19,7 +19,7 @@ public class AllowMemberUseTemplate {
   public static void grantTagTemplateUserRole() {
     // TODO(developer): Replace these variables before running the sample.
     String projectId = "my-project";
-    String tagTemplateId = "onprem_tag_template";
+    String tagTemplateId = "my_tag_template";
     String memberId = "user:test-user@gmail.com";
     grantTagTemplateUserRole(projectId, tagTemplateId, memberId);
   }
@@ -74,7 +74,6 @@ public class AllowMemberUseTemplate {
 
     } catch (Exception e) {
       System.out.print("Error during AllowMemberUseTemplate:\n" + e.toString());
-      e.printStackTrace();
     }
   }
 }

@@ -53,7 +53,6 @@ public class SearchCatalog {
 
     } catch (Exception e) {
       System.out.print("Error during SearchCatalog:\n" + e.toString());
-      e.printStackTrace();
     }
   }
 }
